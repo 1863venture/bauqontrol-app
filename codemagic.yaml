@@ -1,0 +1,34 @@
+workflows:
+  ios-capacitor:
+    name: iOS Capacitor Build
+    max_build_duration: 60
+    environment:
+      node: 18
+      xcode: latest
+      vars:
+        BUNDLE_ID: "com.bauqontrol.app"
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install
+      - name: Build web assets
+        script: |
+          npm run build || echo "no build step"
+      - name: Add iOS platform
+        script: |
+          npx cap add ios || true
+      - name: Sync Capacitor
+        script: |
+          npx cap sync ios
+      - name: Build iOS app
+        script: |
+          xcode-project build-ipa \
+            --workspace "ios/App/App.xcworkspace" \
+            --scheme "App" \
+            --archive-flags="-destination 'generic/platform=iOS'"
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
