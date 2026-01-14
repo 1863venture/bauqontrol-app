@@ -1,19 +1,18 @@
 {
-  "name": "bauqontrol-capacitor",
+  "name": "bauqontrol-app",
   "version": "1.0.0",
   "private": true,
-  "description": "Capacitor wrapper for BauQontrol (loads https://bauqontrol.com/login.php)",
-  "type": "module",
+  "description": "BauQontrol Capacitor App",
   "scripts": {
-    "cap:sync": "npx cap sync",
-    "android:add": "npx cap add android",
-    "android:sync": "npx cap sync android",
-    "android:open": "npx cap open android"
+    "build": "echo \"no web build step\""
   },
   "dependencies": {
-    "@capacitor/core": "^6.0.0",
-    "@capacitor/cli": "^6.0.0",
-    "@capacitor/android": "^6.0.0",
-    "@capacitor/camera": "^6.0.0"
+    "@capacitor/core": "^5.6.0",
+    "@capacitor/cli": "^5.6.0",
+    "@capacitor/ios": "^5.6.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "ts-node": "^10.9.2"
   }
 }
