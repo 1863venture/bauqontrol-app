@@ -4,7 +4,7 @@ workflows:
     max_build_duration: 60
 
     integrations:
-      app_store_connect: "1863 Venture UG (haftungsbeschränkt)"
+      app_store_connect: bauqontrol
 
     environment:
       node: 18
@@ -40,3 +40,4 @@ workflows:
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
+
