@@ -1,13 +1,15 @@
 workflows:
   ios-capacitor:
-    name: iOS Capacitor Build
+    name: iOS Capacitor Build (signed)
     max_build_duration: 60
 
     environment:
       node: 18
       xcode: latest
-      vars:
-        BUNDLE_ID: "com.bauqontrol.app"
+
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.bauqontrol.app
 
     scripts:
       - name: Install dependencies
@@ -20,19 +22,22 @@ workflows:
 
       - name: Add iOS platform
         script: |
-          npx cap add ios || echo "iOS platform already exists"
+          npx cap add ios || true
 
       - name: Sync Capacitor
         script: |
           npx cap sync ios
 
+      - name: Apply provisioning profiles to Xcode project
+        script: |
+          # Wichtig: explizit euer Projekt angeben, damit Codemagic nicht irgendwo anders Signings setzt
+          xcode-project use-profiles --project ios/App/App.xcodeproj
+
       - name: Build iOS IPA
         script: |
           xcode-project build-ipa \
             --workspace "ios/App/App.xcworkspace" \
-            --scheme "App" \
-            --archive-flags="-destination 'generic/platform=iOS' CODE_SIGN_STYLE=Automatic" \
-            --export-options-plist "./export_options.plist"
+            --scheme "App"
 
     artifacts:
       - build/ios/ipa/*.ipa
