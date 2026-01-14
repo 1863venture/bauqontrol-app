@@ -8,6 +8,8 @@ workflows:
       xcode: latest
       vars:
         BUNDLE_ID: "com.bauqontrol.app"
+        PROFILE_NAME: "bauqontrol_appstore"
+        TEAM_ID: "D3PUT28R3X"
 
     scripts:
       - name: Install dependencies
@@ -26,13 +28,48 @@ workflows:
         script: |
           npx cap sync ios
 
+      - name: Create export_options.plist (App Store)
+        script: |
+          cat > export_options.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+
+            <key>signingStyle</key>
+            <string>manual</string>
+
+            <key>teamID</key>
+            <string>${TEAM_ID}</string>
+
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>${BUNDLE_ID}</key>
+              <string>${PROFILE_NAME}</string>
+            </dict>
+
+            <key>uploadSymbols</key>
+            <true/>
+            <key>compileBitcode</key>
+            <false/>
+          </dict>
+          </plist>
+          EOF
+
+          echo "Created export_options.plist:"
+          ls -la export_options.plist
+
       - name: Build iOS IPA
         script: |
           xcode-project build-ipa \
             --workspace "ios/App/App.xcworkspace" \
             --scheme "App" \
+            --export-options-plist "./export_options.plist" \
             --archive-flags="-destination 'generic/platform=iOS'"
 
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
+      - export_options.plist
