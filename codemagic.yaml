@@ -1,7 +1,10 @@
 workflows:
   ios-capacitor:
-    name: iOS Capacitor Build (IPA only)
+    name: iOS Capacitor Build
     max_build_duration: 60
+
+    integrations:
+      app_store_connect: bauqontrol
 
     environment:
       node: 18
@@ -20,7 +23,7 @@ workflows:
 
       - name: Add iOS platform
         script: |
-          npx cap add ios || true
+          npx cap add ios || echo "iOS platform already exists"
 
       - name: Sync Capacitor
         script: |
@@ -31,8 +34,9 @@ workflows:
           xcode-project build-ipa \
             --workspace "ios/App/App.xcworkspace" \
             --scheme "App" \
-            --export-options-plist "./export_options.plist" \
+            --automatic-code-signing \
             --archive-flags="-destination 'generic/platform=iOS'"
 
     artifacts:
       - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
