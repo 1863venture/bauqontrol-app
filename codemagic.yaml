@@ -2,23 +2,35 @@ workflows:
   ios-capacitor:
     name: iOS Capacitor Build (signed)
     max_build_duration: 60
+    instance_type: mac_mini_m2
+
+    integrations:
+      # <-- Das ist der "App Store Connect API key name" aus Codemagic (nicht der Firmenname)
+      app_store_connect: bauqontrol
 
     environment:
       node: 18
       xcode: latest
+
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.bauqontrol.app
+
       vars:
-        BUNDLE_ID: "com.bauqontrol.app"
+        BUNDLE_ID: com.bauqontrol.app
+        XCODE_WORKSPACE: ios/App/App.xcworkspace
+        XCODE_SCHEME: App
 
     scripts:
       - name: Install dependencies
         script: |
-          npm install
+          npm ci || npm install
 
       - name: Build web assets
         script: |
           npm run build || echo "no build step"
 
-      - name: Add iOS platform
+      - name: Add iOS platform (if missing)
         script: |
           npx cap add ios || echo "iOS platform already exists"
 
@@ -26,11 +38,17 @@ workflows:
         script: |
           npx cap sync ios
 
+      - name: Apply provisioning profiles to Xcode project
+        script: |
+          xcode-project use-profiles \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME"
+
       - name: Build iOS IPA
         script: |
           xcode-project build-ipa \
-            --workspace "ios/App/App.xcworkspace" \
-            --scheme "App" \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME" \
             --archive-flags="-destination 'generic/platform=iOS'"
 
     artifacts:
@@ -41,3 +59,6 @@ workflows:
       app_store_connect:
         auth: integration
         submit_to_testflight: true
+        # optional:
+        # beta_groups:
+        #   - Internal Testers
